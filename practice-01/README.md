@@ -10,10 +10,11 @@
 
 ## 目录
 
-- `screenshots/`：S1–S8 验收截图
+- `screenshots/`：S1–S10 验收截图
 - `files/hello.py`：任务四 A 用到的代码文件
 - `files/paste-image-test.png`：任务四 B 用到的小图片（200×200，浅蓝色方块 + 白色数字 7）
 - `pptx/`：任务六从 anthropics/skills 下载的 `skills/pptx` 完整副本（含 `SKILL.md`、`LICENSE.txt`、`scripts/`，源 commit `2c5958ecac7cee2b583967a2c4981d0f4a75c579`）
+- `out/`：任务六选做产物——两页 PPT `pi-practice.pptx`、生成脚本 `make-deck.js`、整页渲染图 `pi-practice-slide-1.png`、`pi-practice-slide-2.png`
 
 ---
 
@@ -137,7 +138,35 @@ pi install npm:pi-web-access -l
 - 所在目录：`D:\CodexProject\软件工程概论\Pi agent\.pi\skills\pptx`（主文件为其中的 `SKILL.md`）
 - 用途：处理 `.pptx/.potx` 演示文稿的各类任务，并列出了新建（pptxgenjs 脚本）、编辑（解压改 XML 再打包）、读取（markdown / `thumbnail.py` 缩略图）等场景与 `scripts/` 中的脚本清单
 
-按作业的四层划分：安装成功、发现成功、调用成功均已达成并留下截图；生成 PPT 属于选做之外的延伸项，本次未生成实际演示文件。
+### 选做：生成一个两页 PPT 并核查能打开
+
+在同一个 Pi 会话（`deepseek-flash · high`，已加载 `/skill:pptx`）中按 Skill 的方法生成，提示词要点：用 pptxgenjs 生成两页 deck，第 1 页标题 + 副标题，第 2 页六条任务要点，脚本落在 `ppt\make-deck.js`。
+
+**依赖先查后补**（Skill 文本假设的工具并不都在本机）：
+
+| 依赖 | 本机初始状态 | 处理 |
+| --- | --- | --- |
+| Node.js | v24.18.0 已装 | 直接用 |
+| pptxgenjs | 未安装（`npm ls -g` 为空） | `npm install pptxgenjs` → 4.0.1 |
+| python-pptx / defusedxml / lxml / markitdown | 系统 Python 缺 | Pi 自行执行 `python -m pip install defusedxml lxml "markitdown[pptx]"` |
+| LibreOffice (`soffice`) | 未安装；`scripts/office/soffice.py` 的 shim 仅支持 Unix | 改用 PowerShell 读 OOXML 的自建预览器做视觉检查（见下） |
+| `pdftoppm` | 未安装 | 同上 |
+
+**S9-pptx-generated.png**：Pi 的完整产出说明——产物路径 `github-submit\practice-01\out\pi-practice.pptx`（60,540 字节）、生成脚本 `ppt\make-deck.js`、`LAYOUT_WIDE` 13.3×7.5 in 画布、两页版式说明，以及 QA 结论：
+
+- `scripts/office/validate.py` → **All validations PASSED**（schema / 关系 / content-type / 幻灯片检查）
+- `markitdown` 抽取的两页文字与要求逐字一致，无占位符残留
+- 视觉检查：本机无 LibreOffice、PowerPoint COM 未注册、`soffice.py` shim 仅 Unix，故 Pi 另写 `ppt/qa/render_preview.py`（直接解析形状 XML → HTML → 无头 Chrome 截图）逐页核对，无溢出、无重叠
+- 首版第 2 页标题写「六项任务要点」却只列 5 条，已按其提示改为 6 条并重新生成、重跑 validate
+
+**S10-pptx-verified.png**：在 Pi 之外做的独立复核（两个不同实现都能打开同一文件）：
+
+- `python-pptx`：`slides: 2`，画布 `12192000 × 6858000 EMU = 13.33 × 7.50 in`，两页文字可完整读出
+- LibreOffice（随 IDE 附带的 Kit）：`backend native/libreoffice`、`pageCount 2`、`missingFonts 0`，两页均成功渲染为 1921×1081 图像
+
+渲染出的整页图已存入仓库：`out/pi-practice-slide-1.png`、`out/pi-practice-slide-2.png`；生成脚本 `out/make-deck.js` 可复现（`npm install pptxgenjs` 后 `node make-deck.js`）。
+
+按作业的四层划分：安装成功、发现成功、调用成功、**生成 PPT 成功并核查可打开**，四项均已达成并留下截图。
 
 ## 备用说明
 
