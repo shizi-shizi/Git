@@ -90,7 +90,7 @@ Pi 先执行 `ls -la`，再调用 `read hello.py`，回复说明 `add` 是加法
 
 调用一次搜索：「请用 web_search 搜索 Pi coding agent 的官方文档，告诉我前三条结果的标题和链接。」扩展工具 `search` 发起 3 条查询、取得 15 个来源（provider: exa），返回 `pi.dev` 文档、Quickstart、Command Line 三个链接。
 
-![](../screenshots/S6-tool-use.png)
+![S6-3 search 工具调用与返回结果](../screenshots/S6-tool-use.png)
 
 同一扩展的网页抓取（fetch）在本机被其内置的 SSRF 防护拦截，本次未取得抓取结果。
 

@@ -7,7 +7,7 @@
 - 报告正文：[practice-01/README.md](practice-01/README.md)
 - 截图目录：[screenshots/](screenshots/)（S1–S10，共 15 张）
 - 附带文件：[practice-01/files/](practice-01/files/)（`hello.py`、`paste-image-test.png`）、[practice-01/pptx/](practice-01/pptx/)（`skills/pptx` 副本）、[practice-01/out/](practice-01/out/)（两页 PPT、生成脚本、渲染图）
-- 作业 Issue：#1
+- 作业 Issue：https://github.com/shizi-shizi/Git/issues/1
 
 环境：Windows 11，Windows Terminal，PowerShell 7，Pi 1.5.2，DeepSeek 提供商（API Key）。
 
