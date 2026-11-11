@@ -1,85 +1,52 @@
 # 实践课1：Pi Agent 安装与使用
 
-- 姓名拼音：yuanshiwen
-- 完成日期：2026-11-11
-- 平台：Windows 11 + Windows Terminal + PowerShell 7
-- Pi 版本：`1.5.2`（`pi --version`）
-- 模型提供商：DeepSeek（API Key 方式配置），可用模型 `deepseek-v4-pro`、`deepseek-flash`
+姓名拼音：yuanshiwen
+日期：2026-11-11
+环境：Windows 11，Windows Terminal，PowerShell 7，Pi 1.5.2，DeepSeek 提供商（API Key 方式）
 
-本文档记录本次实践的实际操作过程与截图证据。所有截图都是在真实 Pi 会话中直接对窗口截取的，未做内容修改；不含 API Key、`auth.json`、授权回调链接等敏感信息。
+## 一、安装与启动
 
-## 目录
-
-- `screenshots/`：S1–S10 验收截图
-- `files/hello.py`：任务四 A 用到的代码文件
-- `files/paste-image-test.png`：任务四 B 用到的小图片（200×200，浅蓝色方块 + 白色数字 7）
-- `pptx/`：任务六从 anthropics/skills 下载的 `skills/pptx` 完整副本（含 `SKILL.md`、`LICENSE.txt`、`scripts/`，源 commit `2c5958ecac7cee2b583967a2c4981d0f4a75c579`）
-- `out/`：任务六选做产物——两页 PPT `pi-practice.pptx`、生成脚本 `make-deck.js`、整页渲染图 `pi-practice-slide-1.png`、`pi-practice-slide-2.png`
-
----
-
-## 任务一 本地安装并启动
-
-安装命令（官方 README 提供的 Windows 入口）：
+安装命令取自项目官方 README：
 
 ```powershell
 powershell -c "irm https://pi.dev/install.ps1 | iex"
 ```
 
-安装后关闭旧终端，在专用练习目录中启动：
+新建练习目录 `pi-test`，在其中执行 `pi` 启动。
 
-```powershell
-mkdir pi-test
-cd pi-test
-pi
-```
-
-**S1-startup.png**：同屏可见
-
-- 顶部：Pi `v1.5.2`，以及 `escape interrupt / / commands / ! bash / ctrl+o more` 快捷键提示；
-- 中部：`[Extensions]` 已加载资源；
-- 底部状态栏左侧：当前工作目录 `D:\CodexProject\软件工程概论\Pi agent\pi-test`；
-- 底部状态栏右侧：当前模型 `deepseek-v4-pro · high`。
-
-### 一处环境修复记录
-
-Pi 在 Windows 上执行 `!` 开头的 bash 命令时会按固定位置查找 Git Bash（`C:\Program Files\Git\bin\bash.exe`、`C:\Program Files (x86)\Git\bin\bash.exe`）。本机 Git 安装在其他盘，导致最初 `!pwd` 报 `No bash shell found`。
-
-按报错提示的第 3 种方式，在全局设置 `C:\Users\6\.pi\agent\settings.json` 中显式指定 shell：
+启动后 `!` 命令报错 `No bash shell found`：Pi 只在 `C:\Program Files\Git\bin` 和 `C:\Program Files (x86)\Git\bin` 查找 Git Bash，而本机 Git 装在 `D:\Git\Git`。在 `C:\Users\6\.pi\agent\settings.json` 中指定 shell 后恢复正常：
 
 ```json
-{
-  "shellPath": "D:\\Git\\Git\\bin\\bash.exe"
-}
+{ "shellPath": "D:\\Git\\Git\\bin\\bash.exe" }
 ```
 
-修复后 Pi 的 bash 工具与 `!` 命令均可用，任务四 A 的截图中可以看到 `$ ls -la` 正常执行。
+![S1 启动后：版本 1.5.2，Extensions 区域列出 pi-web-access:dist，底部状态栏为工作目录 pi-test 与模型 deepseek-v4-pro · high](../screenshots/S1-startup.png)
 
-## 任务二 配置模型并完成一次会话
+## 二、模型配置与一次会话
 
-通过 `/login` → `Sign in with an API key` → 选择 DeepSeek，填入在 DeepSeek API Platform 创建的密钥。截图不包含密钥创建过程与密钥本身。
+`/login` → `Sign in with an API key` → 选择 DeepSeek，填入在 DeepSeek API Platform 创建的密钥。发送提示词「你好，请用一句话介绍你自己。」，收到回复「你好！我是 Pi，一个能帮你查文件、跑命令、改代码的智能编程助手。」
 
-**S2-session.png**：显示自己发出的提示词「你好，请用一句话介绍你自己。」、模型实际回复，以及底部状态栏中的当前模型 `deepseek-v4-pro · high` 与目录信息。
+![S2 提问与回复，底部状态栏模型为 deepseek-v4-pro · high](../screenshots/S2-session.png)
 
-## 任务三 切换模型与模型思考级别
+## 三、模型与思考级别切换
 
-切换方式：`/model` 打开模型选择器，在候选中筛选 `flash` 后回车确认；随后 `/thinking` 选择思考级别。
+| 顺序 | 操作 | 操作后的状态 | 回复情况 |
+| --- | --- | --- | --- |
+| 1 | 初始 | `deepseek-v4-pro · high` | 「你好」一轮正常 |
+| 2 | `/model` 筛选 `flash` 后回车 | `deepseek-flash · high` | 问「请用一句话解释持续集成。」，回复正常 |
+| 3 | `/thinking` 选 `low` | `deepseek-flash · low` | 问「请用一句话说明代码评审的作用。」，回复正常 |
 
-| 截图 | 状态 | 说明 |
-| --- | --- | --- |
-| `S3-model-before.png` | `deepseek-v4-pro · high` | 切换前的模型与思考级别（同一会话中的“你好”一轮） |
-| `S3-model-after.png` | `deepseek-flash · high` | 用 `/model` 切换到 DeepSeek V4.1 Flash 后提问「请用一句话解释持续集成。」，回复正常；界面出现 `Model: deepseek-flash` 系统提示行 |
-| `S3-thinking-after.png` | `deepseek-flash · low` | 用 `/thinking` 把思考级别从 `high` 改为 `low`，界面出现 `Thinking level: low`，再次提问「请用一句话说明代码评审的作用。」，回复正常 |
+选择 flash 的原因：这一步只需回答概念性的短问题；v4-pro 的思考级别只有 `high` 和 `max` 两档，留给需要更复杂推理的场合。`deepseek-flash` 的思考级别有 `off / low / high / max`。
 
-思考级别选择器中该模型提供 `off / low（~2k tokens）/ high（~16k tokens）/ max`，本次实际选择 `low`。
+![S3-1 切换前：deepseek-v4-pro · high](../screenshots/S3-model-before.png)
 
-选择依据：`deepseek-v4-pro` 思考级别只支持 `high` 与 `max`，适合复杂推理；`deepseek-flash` 支持 `low/high/max`，价格更低（$0.3/$1.2 每百万 token，pro 为 $1.32/$3.96），适合解释性问答、文件说明、Skill 调用等不需要深度推理的任务。日常小任务用 flash + low 更快更省；只有遇到跨文件重构、复杂推理才切到 pro + high。
+![S3-2 换模型后：deepseek-flash · high，界面出现 Model: deepseek-flash](../screenshots/S3-model-after.png)
 
-## 任务四 引用代码并粘贴小图片
+![S3-3 调整思考级别后：deepseek-flash · low，界面出现 Thinking level: low](../screenshots/S3-thinking-after.png)
 
-### A 使用 @ 引用代码文件
+## 四、引用代码文件与图片输入
 
-`files/hello.py`（运行输出 `5`）：
+### A 用 @ 引用 hello.py
 
 ```python
 def add(a, b):
@@ -88,88 +55,105 @@ def add(a, b):
 print(add(2, 3))
 ```
 
-在 `pi-test` 目录启动 Pi，输入 `@` 打开候选列表，继续输入 `hello` 过滤，选中 `hello.py` 后回车确认，再输入提示词「…的功能，说明运行后输出什么。只解释，不修改文件。」
+在输入区键入 `@` 打开候选列表，继续键入 `hello` 过滤，选中 `hello.py` 回车，再输入问题「…的功能，说明运行后输出什么。只解释，不修改文件。」
 
-**S4-file-reference.png**：可见引用后的 `@hello.py`、完整问题、Pi 自己的工具调用（`$ ls -la`、`read hello.py`）以及回复「hello.py 定义了一个加法函数 add(a, b)…运行后输出 5」，并注明文件未被修改。
+Pi 先执行 `ls -la`，再调用 `read hello.py`，回复说明 `add` 是加法函数、运行后输出 `5`，并注明文件未被修改。
 
-### B 粘贴小图片
+![S4 @ 引用 hello.py 后的提问、read 调用与回复](../screenshots/S4-file-reference.png)
 
-图片为 200×200 的浅蓝色方块，中央白色数字 7（`files/paste-image-test.png`）。先把图片放入剪贴板（图像格式，不是文件路径），在 Pi 输入区按 `Alt+V` 粘贴，Pi 将其落盘为临时图片文件并在输入框中显示该路径，随后追问「请描述图片中的颜色、形状和数字。」
+### B 粘贴图片
 
-**S5-image-input.png**：可见粘贴产生的图片路径、问题、`read` 工具对该图片的读取，以及回复「浅蓝色（青色系）背景方块…白色数字 7，位于浅蓝色方块正中央」。
+测试图为 200×200 的浅蓝色方块，中央是白色数字 7：
 
-## 任务五 安装并使用一个插件
+![图片输入测试图：200×200，浅蓝底、白色数字 7](files/paste-image-test.png)
 
-- 名称：`pi-web-access`（npm 包 `pi-web-access@0.47.0`）
-- 来源：https://pi.dev/packages 收录的 Pi Package，仓库 https://github.com/nicobailon/pi-web-access ，作者 Nico Bailon，MIT
-- 作用：为 Pi 增加联网能力——网页搜索、URL 抓取、GitHub 仓库/Issue 读取、PDF 提取、YouTube 视频理解等
-- 安装命令（本次为项目级安装，装在 `pi-test`）：
+把图片放入剪贴板后在输入区按 `Alt+V`，Pi 将图片存为临时文件并在输入框显示路径；随后输入「请描述图片中的颜色、形状和数字。」，Pi 读取该文件并回复：浅蓝色背景方块、正方形、白色数字 7 居中。
 
-```powershell
-pi install npm:pi-web-access -l
-```
+![S5 粘贴图片后的路径、提问与识别结果](../screenshots/S5-image-input.png)
 
-为了拿到真实的安装输出，先执行 `pi remove npm:pi-web-access -l` 移除旧安装，再重新安装。
+## 五、插件 pi-web-access
 
-**S6-install.png**：`Removing npm:pi-web-access...` → `removed 211 packages in 3s` → `Removed npm:pi-web-access`，随后 `Installing npm:pi-web-access...` → `added 211 packages in 24s` → `Installed npm:pi-web-access`。
+| 项目 | 内容 |
+| --- | --- |
+| 包名 | `pi-web-access@0.47.0`（npm） |
+| 来源 | https://pi.dev/packages ；仓库 https://github.com/nicobailon/pi-web-access ，作者 Nico Bailon，MIT |
+| 作用 | 为 Pi 增加联网能力：网页搜索、URL 抓取、GitHub 仓库与 Issue 读取、PDF 提取、视频理解 |
+| 安装命令 | `pi install npm:pi-web-access -l`（项目级，装在 `pi-test`） |
 
-**S6-extension-loaded.png**：完全退出原会话后单独运行 `pi`，启动画面的 `[Extensions]` 区域列出 `pi-web-access:dist`（该扩展的入口在包内 `dist` 目录）。
+为取得安装输出，先 `pi remove npm:pi-web-access -l` 再重新安装，输出为 `added 211 packages in 24s` / `Installed npm:pi-web-access`。
 
-**S6-tool-use.png**：实际调用一次功能，提示词「请用 web_search 搜索 Pi coding agent 的官方文档，告诉我前三条结果的标题和链接。」，可见扩展工具 `search` 发起 3 条查询、15 个来源（provider: exa），并给出 pi.dev 文档 / Quickstart / Command Line 三个结果链接。
+![S6-1 移除与重新安装的输出](../screenshots/S6-install.png)
 
-需要说明的限制：该包的网页搜索（`search`/`web_search`）可用；网页正文抓取（fetch）在本机被包内自带的 SSRF 防护拦截，因此抓取路径没有验证成功。按作业要求，没有通过关闭或绕过安全防护来“完成”抓取测试。
+退出会话后单独运行 `pi`，启动画面的 `[Extensions]` 区域列出 `pi-web-access:dist`。
 
-## 任务六 让 AI 安装一个 PPT Skill（选做，已完成）
+![S6-2 重启后 Extensions 区域列出 pi-web-access:dist](../screenshots/S6-extension-loaded.png)
 
-- 来源：https://github.com/anthropics/skills 的 `skills/pptx`
-- 源 commit：`2c5958ecac7cee2b583967a2c4981d0f4a75c579`（记录在 `.pi/skills/pptx/SOURCE_COMMIT.txt`）
-- 安装位置：`D:\CodexProject\软件工程概论\Pi agent\.pi\skills\pptx`
-- 内容：`SKILL.md`、`LICENSE.txt`、`SOURCE_COMMIT.txt`、`scripts/`（`add_slide.py`、`clean.py`、`thumbnail.py`、`office/` 下的校验脚本与 OOXML schemas）
+调用一次搜索：「请用 web_search 搜索 Pi coding agent 的官方文档，告诉我前三条结果的标题和链接。」扩展工具 `search` 发起 3 条查询、取得 15 个来源（provider: exa），返回 `pi.dev` 文档、Quickstart、Command Line 三个链接。
 
-**S7-skill-files.png**：终端中 `Get-Location` 显示项目根目录 `D:\CodexProject\软件工程概论\Pi agent`，其下列出 `.pi\skills\pptx\SKILL.md`、`.pi\skills\pptx\LICENSE.txt`、`.pi\skills\pptx\scripts\...`，路径与文件均可辨认。完整副本另存于本仓库 `pptx/` 目录。
+![](../screenshots/S6-tool-use.png)
 
-### 启动发现与实际调用
+同一扩展的网页抓取（fetch）在本机被其内置的 SSRF 防护拦截，本次未取得抓取结果。
 
-**S8-skill-discovered.png**：在该项目目录重新启动 `pi`，启动画面 `[Skills]` 区域列出 `pptx`，底部状态栏显示工作目录 `D:\CodexProject\软件工程概论\Pi agent` 与当前模型 `deepseek-flash · high`。
+## 六、PPT Skill
 
-**S8-skill-invoked.png**：输入 `/skill:pptx 请说明这个 Skill 的名称、用途和所在目录。`，界面出现 `[skill] pptx` 标记，回复给出：
+### 安装与发现
 
-- 名称：`pptx`
-- 所在目录：`D:\CodexProject\软件工程概论\Pi agent\.pi\skills\pptx`（主文件为其中的 `SKILL.md`）
-- 用途：处理 `.pptx/.potx` 演示文稿的各类任务，并列出了新建（pptxgenjs 脚本）、编辑（解压改 XML 再打包）、读取（markdown / `thumbnail.py` 缩略图）等场景与 `scripts/` 中的脚本清单
+| 项目 | 内容 |
+| --- | --- |
+| 来源 | https://github.com/anthropics/skills 的 `skills/pptx` |
+| 源 commit | `2c5958ecac7cee2b583967a2c4981d0f4a75c579`（记在 `.pi/skills/pptx/SOURCE_COMMIT.txt`） |
+| 安装位置 | `D:\CodexProject\软件工程概论\Pi agent\.pi\skills\pptx` |
+| 内容 | `SKILL.md`、`LICENSE.txt`、`SOURCE_COMMIT.txt`、`scripts/`（`add_slide.py`、`clean.py`、`thumbnail.py`、`office/` 下的校验脚本与 OOXML schemas） |
 
-### 选做：生成一个两页 PPT 并核查能打开
+完整副本另存于本仓库 `practice-01/pptx/`。
 
-在同一个 Pi 会话（`deepseek-flash · high`，已加载 `/skill:pptx`）中按 Skill 的方法生成，提示词要点：用 pptxgenjs 生成两页 deck，第 1 页标题 + 副标题，第 2 页六条任务要点，脚本落在 `ppt\make-deck.js`。
+![S7 项目根目录下的 .pi\skills\pptx\SKILL.md、LICENSE.txt、scripts](../screenshots/S7-skill-files.png)
 
-**依赖先查后补**（Skill 文本假设的工具并不都在本机）：
+在该目录重新启动 `pi`，启动画面 `[Skills]` 区域列出 `pptx`。
 
-| 依赖 | 本机初始状态 | 处理 |
+![S8-1 重启后 Skills 区域列出 pptx](../screenshots/S8-skill-discovered.png)
+
+输入 `/skill:pptx 请说明这个 Skill 的名称、用途和所在目录。`，回复给出名称 `pptx`、目录 `D:\CodexProject\软件工程概论\Pi agent\.pi\skills\pptx`（主文件 `SKILL.md`），以及新建（pptxgenjs 脚本）、编辑（解压改 XML 再打包）、读取（markitdown / `thumbnail.py`）三类用法。
+
+![S8-2 /skill:pptx 的调用与回复](../screenshots/S8-skill-invoked.png)
+
+### 选做：生成两页 PPT 并核查可打开
+
+生成前先确认依赖。Skill 文本假设的工具本机并不齐全：
+
+| 依赖 | 本机状态 | 处理 |
 | --- | --- | --- |
-| Node.js | v24.18.0 已装 | 直接用 |
-| pptxgenjs | 未安装（`npm ls -g` 为空） | `npm install pptxgenjs` → 4.0.1 |
-| python-pptx / defusedxml / lxml / markitdown | 系统 Python 缺 | Pi 自行执行 `python -m pip install defusedxml lxml "markitdown[pptx]"` |
-| LibreOffice (`soffice`) | 未安装；`scripts/office/soffice.py` 的 shim 仅支持 Unix | 改用 PowerShell 读 OOXML 的自建预览器做视觉检查（见下） |
-| `pdftoppm` | 未安装 | 同上 |
+| Node.js | v24.18.0 已装 | 直接使用 |
+| pptxgenjs | 未安装 | `npm install pptxgenjs`，装到 4.0.1 |
+| python-pptx、defusedxml、lxml、markitdown | 系统 Python 缺失 | 会话内 `python -m pip install defusedxml lxml "markitdown[pptx]"` |
+| LibreOffice、pdftoppm | 均未安装；`scripts/office/soffice.py` 的 shim 只适用于 Unix | 视觉检查改用另写的 OOXML 解析预览器 |
 
-**S9-pptx-generated.png**：Pi 的完整产出说明——产物路径 `github-submit\practice-01\out\pi-practice.pptx`（60,540 字节）、生成脚本 `ppt\make-deck.js`、`LAYOUT_WIDE` 13.3×7.5 in 画布、两页版式说明，以及 QA 结论：
+产物：
 
-- `scripts/office/validate.py` → **All validations PASSED**（schema / 关系 / content-type / 幻灯片检查）
-- `markitdown` 抽取的两页文字与要求逐字一致，无占位符残留
-- 视觉检查：本机无 LibreOffice、PowerPoint COM 未注册、`soffice.py` shim 仅 Unix，故 Pi 另写 `ppt/qa/render_preview.py`（直接解析形状 XML → HTML → 无头 Chrome 截图）逐页核对，无溢出、无重叠
-- 首版第 2 页标题写「六项任务要点」却只列 5 条，已按其提示改为 6 条并重新生成、重跑 validate
+| 文件 | 说明 |
+| --- | --- |
+| `practice-01/out/pi-practice.pptx` | 两页，60,540 字节，画布 13.33×7.5 in |
+| `practice-01/out/make-deck.js` | pptxgenjs 生成脚本（`node make-deck.js` 可复现） |
+| `practice-01/out/pi-practice-slide-1.png`、`-2.png` | 两页整页渲染图 |
 
-**S10-pptx-verified.png**：在 Pi 之外做的独立复核（两个不同实现都能打开同一文件）：
+第 1 页为深蓝底标题页（标题「Pi Agent 实践小结」，副标题「yuanshiwen · 2026-11-11」）；第 2 页为白底列表页（标题「六项任务要点」，6 条项目符号）。第 2 页首版只列 5 条，重新生成后改为 6 条，与标题对应。
 
-- `python-pptx`：`slides: 2`，画布 `12192000 × 6858000 EMU = 13.33 × 7.50 in`，两页文字可完整读出
-- LibreOffice（随 IDE 附带的 Kit）：`backend native/libreoffice`、`pageCount 2`、`missingFonts 0`，两页均成功渲染为 1921×1081 图像
+![S9 会话中的生成过程与产出说明](../screenshots/S9-pptx-generated.png)
 
-渲染出的整页图已存入仓库：`out/pi-practice-slide-1.png`、`out/pi-practice-slide-2.png`；生成脚本 `out/make-deck.js` 可复现（`npm install pptxgenjs` 后 `node make-deck.js`）。
+核查用了两个互相独立的读取实现，加上 Skill 自带的校验脚本：
 
-按作业的四层划分：安装成功、发现成功、调用成功、**生成 PPT 成功并核查可打开**，四项均已达成并留下截图。
+- `scripts/office/validate.py`：`All validations PASSED`（schema、关系、content-type、幻灯片检查）
+- `python-pptx`：`slides: 2`，画布 `12192000 × 6858000 EMU = 13.33 × 7.50 in`，两页文字完整读出
+- LibreOffice：`pageCount 2`、`missingFonts 0`，两页渲染成功（1921×1081）
 
-## 备用说明
+![S10 两项独立核查的终端输出](../screenshots/S10-pptx-verified.png)
 
-- 所有截图均为 Pi 在 Windows Terminal 中的真实窗口截图，未拼接、未改动内容。
-- 截图中出现的临时图片路径（`C:\Users\6\AppData\Local\Temp\pi-clipboard-*.png`）是 `Alt+V` 粘贴时 Pi 自动落盘的位置，属于正常行为。
-- 未提交 `auth.json`、API Key、授权回调或其他凭据。
+## 仓库文件
+
+| 路径 | 内容 |
+| --- | --- |
+| `screenshots/` | S1–S10 共 15 张截图 |
+| `practice-01/README.md` | 本报告 |
+| `practice-01/files/` | `hello.py`、`paste-image-test.png` |
+| `practice-01/pptx/` | `skills/pptx` 完整副本 |
+| `practice-01/out/` | 两页 PPT、生成脚本、渲染图 |
