@@ -32,7 +32,7 @@ powershell -c "irm https://pi.dev/install.ps1 | iex"
 | 2 | `/model` 筛选 `flash` 后回车 | `deepseek-flash · high` | 问「请用一句话解释持续集成。」，回复正常 |
 | 3 | `/thinking` 选 `low` | `deepseek-flash · low` | 问「请用一句话说明代码评审的作用。」，回复正常 |
 
-选择 flash 的原因：这一步只需回答概念性的短问题；v4-pro 的思考级别只有 `high` 和 `max` 两档，留给需要更复杂推理的场合。`deepseek-flash` 的思考级别有 `off / low / high / max`。
+选择 flash 的原因：这一步只需回答概念性的短问题；v4-pro 的思考级别只有 high 和 max 两档，留给需要更复杂推理的场合。deepseek-flash的思考级别有 off / low / high / max
 
 ![S3-1 切换前：deepseek-v4-pro · high](../screenshots/S3-model-before.png)
 
