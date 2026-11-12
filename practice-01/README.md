@@ -76,7 +76,7 @@ Pi 先执行 `ls -la`，再调用 `read hello.py`，回复说明 `add` 是加法
 | 作用 | 为 Pi 增加联网能力：网页搜索、URL 抓取、GitHub 仓库与 Issue 读取、PDF 提取、视频理解 |
 | 安装命令 | `pi install npm:pi-web-access -l`（项目级，装在 `pi-test`） |
 
-为取得安装输出，先 `pi remove npm:pi-web-access -l` 再重新安装，输出为 `added 211 packages in 24s` / `Installed npm:pi-web-access`。
+为取得安装输出，先 `pi remove npm:pi-web-access -l` 再重新安装，输出为 added 211 packages in 24s` / `Installed npm:pi-web-access
 
 ![S6-1 移除与重新安装的输出](../screenshots/S6-install.png)
 
