@@ -14,11 +14,7 @@ powershell -c "irm https://pi.dev/install.ps1 | iex"
 
 新建练习目录 `pi-test`，在其中执行 `pi` 启动。
 
-启动后 `!` 命令报错 `No bash shell found`：Pi 只在 `C:\Program Files\Git\bin` 和 `C:\Program Files (x86)\Git\bin` 查找 Git Bash，而本机 Git 装在 `D:\Git\Git`。在 `C:\Users\6\.pi\agent\settings.json` 中指定 shell 后恢复正常：
 
-```json
-{ "shellPath": "D:\\Git\\Git\\bin\\bash.exe" }
-```
 
 ![S1 启动后：版本 1.5.2，Extensions 区域列出 pi-web-access:dist，底部状态栏为工作目录 pi-test 与模型 deepseek-v4-pro · high](../screenshots/S1-startup.png)
 
